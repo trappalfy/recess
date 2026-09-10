@@ -67,12 +67,13 @@ for (const group of readdirSync(IN)) {
   const dir = join(IN, group);
   if (!statSync(dir).isDirectory()) continue;
   for (const f of readdirSync(dir)) {
-    if (/\.(png|jpe?g|webp|tiff?)$/i.test(f)) files.push([group, f]);
+    if (/\.(png|jpe?g|jfif|webp|tiff?|avif)$/i.test(f)) files.push([group, f]);
   }
 }
 
 let done = 0;
 const unknown = [];
+const warn = [];
 for (const [group, file] of files) {
   const key = `${group}/${basename(file, extname(file))}`;
   const spec = SPEC[key];
@@ -86,10 +87,15 @@ for (const [group, file] of files) {
   const meta = await sharp(path).metadata();
   let source = path;
   let cut = "";
+  let cleared = 0;
   if (bg === T) {
-    const r = await cutout(path);
+    /* JPEG (including the .jfif Windows hands out) rings around high-contrast
+       edges, so the ground is never exactly one colour there; widen the band. */
+    const lossy = meta.format === "jpeg";
+    const r = await cutout(path, lossy ? { solid: 26, keep: 78 } : {});
     source = r.buffer;
-    cut = r.skipped ? "  (alpha already present)" : `  (cut out, ${r.clearedPct}% cleared, ground ${r.bg.join(",")})`;
+    cleared = r.skipped ? 0 : r.clearedPct;
+    cut = r.skipped ? "  (alpha already present)" : `  (cut out, ${cleared}% cleared, ground ${r.bg.join(",")})`;
   }
   await sharp(source)
     .resize(w, h, {
@@ -101,11 +107,18 @@ for (const [group, file] of files) {
   const ratioIn = (meta.width / meta.height).toFixed(3);
   const ratioOut = (w / h).toFixed(3);
   const note = ratioIn === ratioOut ? "" : `  (padded: source ${meta.width}x${meta.height})`;
+  /* Two things that look fine in the log but ruin the asset on the page. */
+  if (cleared > 70) warn.push(`${key}: cutout cleared ${cleared}% — the object may be the same colour as its ground`);
+  if (meta.width < w / 2) warn.push(`${key}: source is ${meta.width}px wide for a ${w}px export — upscaling cannot add detail`);
   console.log(`  ${key}.webp  ${w}x${h}${note}${cut}`);
   done += 1;
 }
 
 for (const f of unknown) console.log(`  skipped, unknown name: ${f}`);
+if (warn.length) {
+  console.log("\ncheck these:");
+  for (const line of warn) console.log(`  ! ${line}`);
+}
 
 const missing = Object.keys(SPEC).filter((k) => !existsSync(join(OUT, `${k}.webp`)));
 console.log(`\nimported ${done}, still missing ${missing.length}:`);

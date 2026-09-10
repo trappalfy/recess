@@ -8,13 +8,15 @@ Generated files go into `public/images/<group>/<name>.webp`. The manifest regene
 
 ## How to generate
 
-1. **Where.** GPT gives transparent backgrounds directly. Gemini does not, so there the background must be flat pure white `#FFFFFF` and gets cut out afterwards.
-2. **Cutting out.** `pip install rembg`, then `rembg i in.png out.png`. Alternatives are remove.bg or Photoshop. Check the edges against both white and `#0A68F5`, because a halo shows up on one and not the other.
-3. **No floor shadows.** Nothing in these images casts a shadow onto a surface. Where a shadow is needed the page adds it in CSS.
-4. **Check the ticker letters.** Generators distort short words. If the letters come out wrong, generate the coin with a blank face and set the ticker in Figma, matching the perspective of the tilted face, then export.
-5. **Two exceptions to transparency.** Everything sitting on the dark slider panel is generated straight onto flat `#000320` and never cut out, because cutting destroys the glow: `orb`, `stack`, `icon-up`, `receipts`. And `rails` is generated on white and left uncut, because the card behind it is white.
-6. **Export.** WebP with alpha, quality 90, at twice the display size from the table below. Keep the PNG masters alongside.
-7. **One session for the coins.** Generate all four coins in a single session with the same style block. If one comes out different, regenerate only that one.
+1. **Where.** GPT gives transparent backgrounds directly and that is always the better option. Where transparency is not available, the ground must be perfectly flat magenta `#FF00FF`.
+2. **Never a white ground for a pale object.** This was learned the hard way on the ribbon: it is a frosted white form, the ground was white, and no cutout can separate the two — 80% of the asset was erased. Magenta appears nowhere in the palette, so it is safe for every asset in the set, pale or dark alike.
+3. **Cutting out is automatic.** `npm run assets:import` does it: a flood fill from the frame edges, so only ground actually connected to the border is removed, and the antialiased rim is unmixed from the ground colour so no halo survives onto the blue section. It warns when a cutout clears an implausible share of the frame.
+4. **No floor shadows.** Nothing in these images casts a shadow onto a surface. Where a shadow is needed the page adds it in CSS.
+5. **Check the ticker letters.** Generators distort short words. If the letters come out wrong, generate the coin with a blank face and set the ticker in Figma, matching the perspective of the tilted face, then export.
+6. **Two exceptions to transparency.** Everything sitting on the dark slider panel is generated straight onto flat `#000320` and never cut out, because cutting destroys the glow: `orb`, `stack`, `icon-up`, `receipts`. And `rails` is generated on white and left uncut, because the card behind it is white.
+7. **Resolution.** Generate at least the export width from the table, and prefer more. Upscaling cannot invent the hairlines back.
+8. **Export is automatic too.** Drop the masters in `assets-in/<group>/` and run `npm run assets:import`; it fits each file to its exact export size without distortion and writes WebP at quality 90. PNG, JPEG and .jfif are all accepted, though a lossy source rings around high-contrast edges and cuts out slightly dirtier.
+9. **One session for the coins.** Generate all four coins in a single session with the same style block. If one comes out different, regenerate only that one.
 
 Total image weight should stay under 1.6 MB.
 
@@ -25,12 +27,12 @@ Total image weight should stay under 1.6 MB.
 Paste this at the start of every prompt, then the asset's own description. It is what keeps the set looking like one family.
 
 ```
-Premium 3D fintech illustration asset. Glossy blue enamel, frosted glass and polished blue metal. Soft studio light from the upper left, gentle rim light on the right edge, subtle inner glow, crisp clean edges, high detail, no grain. Palette: electric blue #0A68F5, sky blue #3AACFF, periwinkle #8FA9FF, deep indigo #1B2A8F, teal #19E3B1, lilac #B79CFF, pearl white. One isolated object with generous empty margin around it, no ground, no cast shadow, no environment reflections, no text except what is specified, no logos, no watermark. Background: transparent; if transparency is not supported, perfectly flat pure white #FFFFFF.
+Premium 3D fintech illustration asset. Glossy blue enamel, frosted glass and polished blue metal. Soft studio light from the upper left, gentle rim light on the right edge, subtle inner glow, crisp clean edges, high detail, no grain. Palette: electric blue #0A68F5, sky blue #3AACFF, periwinkle #8FA9FF, deep indigo #1B2A8F, teal #19E3B1, lilac #B79CFF, pearl white. One isolated object with generous empty margin around it, no ground, no cast shadow, no environment reflections, no text except what is specified, no logos, no watermark. Background: transparent; if transparency is not supported, perfectly flat magenta #FF00FF.
 ```
 
 Two substitutions for the last sentence:
 
-- Dark panel assets (`orb`, `stack`, `icon-up`, `receipts`): `Background: perfectly flat solid color #000320.`
+- Dark panel assets (`orb`, `stack`, `icon-up`, `receipts`): `Background: perfectly flat solid color #000320.` These are never cut out.
 - `rails`: `Background: perfectly flat pure white #FFFFFF.`
 
 ---
@@ -75,10 +77,12 @@ The grain texture is asset 27 in the brief. It is already generated by `npm run 
 Space for the headline is built into the frame, so the lower third must stay empty.
 
 ```
-A wide flowing 3D surface, like a smooth frosted-white glass ribbon or a soft hill, running across the entire width of the frame. It enters from the left edge at about 40% of the frame height, dips gently at one third of the width, rises into one broad rounded crest at about two thirds of the width, then slopes down and leaves the right edge at about 65% height. The top face is pale white-blue with very fine parallel diagonal hairlines, like a delicate engraved grid; a thin bright highlight runs along the crest. Under the top face a second translucent pale-blue band follows the same curve and softly dissolves downward. Seen slightly from above. Ultra-wide 4:1 composition. Everything above the surface stays completely empty, because objects will be placed there later. The bottom 30% of the frame fades smoothly to pure white, because a large headline will sit there. Nothing on the surface.
+A wide flowing 3D surface, like a smooth frosted-white glass ribbon or a soft hill, running across the entire width of the frame. It enters from the left edge at about 40% of the frame height, dips gently at one third of the width, rises into one broad rounded crest at about two thirds of the width, then slopes down and leaves the right edge at about 65% height. The top face is pale white-blue with very fine parallel diagonal hairlines, like a delicate engraved grid; a thin bright highlight runs along the crest. Under the top face a second translucent pale-blue band follows the same curve and softly dissolves downward. Seen slightly from above. Ultra-wide 4:1 composition. Everything above the surface stays completely empty, because objects will be placed there later. The bottom 30% of the frame is empty background as well, because a large headline will sit there. Nothing on the surface, and the surface never fades into the background: its lower edge stays a clean readable edge.
 ```
 
 If the generator refuses 4:1, make it 21:9 and outpaint the sides. Do not stretch it.
+
+This one needs the widest source you can get: it spans the full page and exports at 3840. It is also the asset that most needs a non-white ground, because the ribbon itself is frosted white.
 
 ## 2. `hero/coin-nvda.webp`
 
