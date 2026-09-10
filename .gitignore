@@ -5,3 +5,6 @@ artifacts/
 .env*.local
 *.tsbuildinfo
 next-env.d.ts
+
+# A separate project that lives in this folder; it is not part of Recess.
+NUVO/

@@ -81,3 +81,12 @@ body { font-family: var(--font-inter); color: var(--color-body); }
   overflow: hidden;
   position: relative;
 }
+
+/* Main brief 6.3: one blue block wraps Solution, Showcase, CTA and the footer. */
+.blue-section {
+  background:
+    radial-gradient(ellipse 780px 540px at 50% 260px, rgba(255,255,255,.10), rgba(255,255,255,0) 70%),
+    #0A68F5;
+  border-radius: 64px 64px 0 0;
+}
+.blue-grain { opacity: .13; }

@@ -17,13 +17,15 @@ export function Asset({
   className?: string;
 }) {
   if (!AVAILABLE.has(src)) {
+    /* Neutral grey so the slot stays readable on the white sections and on the
+       blue one alike. The label sits in its own dark chip for the same reason. */
     return (
       <div
         data-placeholder={src}
         aria-hidden="true"
-        className={`flex h-full w-full items-center justify-center overflow-hidden rounded-[6px] border border-dashed border-[rgba(10,104,245,.45)] bg-[rgba(10,104,245,.12)] text-center ${className ?? ""}`}
+        className={`flex h-full w-full items-center justify-center overflow-hidden rounded-[6px] border border-dashed border-[rgba(120,124,140,.85)] bg-[rgba(140,146,165,.22)] text-center ${className ?? ""}`}
       >
-        <span className="px-1 font-mono text-[10px] leading-[1.15] break-all text-[rgba(10,104,245,.9)]">
+        <span className="mx-1 rounded-[3px] bg-[rgba(1,3,32,.72)] px-1 py-[1px] font-mono text-[10px] leading-[1.15] break-all text-white">
           {src}
         </span>
       </div>

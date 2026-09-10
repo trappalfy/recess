@@ -82,7 +82,7 @@ for (const shot of SHOTS) {
     console.warn(`skipping ${shot.name}: ${err.message.split("\n")[0]}`);
     continue;
   }
-  await page.waitForTimeout(600);
+  await page.waitForTimeout(1800);
   let buffer = await page.screenshot();
 
   if (shot.inkTop != null) {
