@@ -30,9 +30,9 @@ body { font-family: var(--font-inter); color: var(--color-body); }
 
 /* Main brief 4.3: centred content column. */
 .container-recess {
-  max-width: 1310px;
+  /* Exactly 1310 wide once there is room, 24px gutters below that. */
+  width: min(1310px, 100% - 48px);
   margin-inline: auto;
-  padding-inline: 24px;
 }
 
 /* Main brief 6.1: proportional artboard. */
@@ -71,4 +71,13 @@ body { font-family: var(--font-inter); color: var(--color-body); }
   opacity: .20;
   -webkit-mask-image: radial-gradient(ellipse calc(960 * var(--u)) calc(820 * var(--u)) at 50% 0%, #000 60%, transparent 100%);
   mask-image: radial-gradient(ellipse calc(960 * var(--u)) calc(820 * var(--u)) at 50% 0%, #000 60%, transparent 100%);
+}
+
+/* Main brief 6.2: bento card shell. */
+.bento-card {
+  background: #FFFFFF;
+  border: 1px solid var(--color-line);
+  border-radius: 32px;
+  overflow: hidden;
+  position: relative;
 }
