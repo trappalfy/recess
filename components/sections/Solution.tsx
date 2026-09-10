@@ -2,6 +2,7 @@ import { AssetBox } from "@/components/ui/AssetBox";
 import { Badge } from "@/components/ui/Badge";
 import { BlurWords } from "@/components/ui/BlurWords";
 import { Reveal } from "@/components/ui/Reveal";
+import { SolutionMobile } from "./SolutionMobile";
 import { COPY } from "@/lib/copy";
 import { u } from "@/lib/u";
 
@@ -13,7 +14,9 @@ import { u } from "@/lib/u";
  */
 export function Solution() {
   return (
-    <div className="relative" style={{ height: u(900) }}>
+    <>
+      <SolutionMobile />
+      <div className="solution-artboard relative hidden lg:block">
       <AssetBox
         src="solution/toggle.webp"
         x={830} y={40} w={280} h={155} z={2}
@@ -78,6 +81,7 @@ export function Solution() {
       >
         {COPY.solution.right}
       </Reveal>
-    </div>
+      </div>
+    </>
   );
 }

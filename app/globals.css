@@ -39,6 +39,19 @@ body { font-family: var(--font-inter); color: var(--color-body); }
 .artboard-wrap { container-type: inline-size; max-width: 1920px; margin-inline: auto; }
 .artboard { position: relative; --u: calc(100cqw / 1905); }
 
+/* Main brief 9: the proportional blocks hold their artboard height only where
+   the absolute layout is still in use; below the breakpoint they follow flow. */
+@media (min-width: 1024px) {
+  .solution-artboard { height: calc(900 * var(--u)); }
+  /* max() keeps the board proportional at the reference width while still
+     clearing the fixed-height pill in the narrow half of the range. */
+  .hero-artboard { height: max(calc(927 * var(--u)), calc(836 * var(--u) + 83px)); }
+  /* min-height, not height: the block grows past 755u once the fixed-size
+     heading and pill need more room than the scaled board would give. */
+  .cta-artboard { min-height: calc(755 * var(--u)); }
+  .cta-body { padding-top: calc(218 * var(--u)); }
+}
+
 /* Main brief 4.5: grain. */
 .grain {
   position: absolute;
@@ -67,6 +80,9 @@ body { font-family: var(--font-inter); color: var(--color-body); }
       #D0E2FC 68%, #F5F9FF 83%, rgba(255,255,255,0) 100%),
     #FFFFFF;
 }
+/* Main brief 9: the mobile hero is not an artboard, so it gets its own --u,
+   sized from the viewport and capped so the glow stops growing on a tablet. */
+.hero-mobile { --u: min(calc(100vw / 738), 0.8125px); }
 .hero-grain {
   opacity: .20;
   -webkit-mask-image: radial-gradient(ellipse calc(960 * var(--u)) calc(820 * var(--u)) at 50% 0%, #000 60%, transparent 100%);

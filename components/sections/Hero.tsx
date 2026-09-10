@@ -28,8 +28,10 @@ export function Hero() {
         };
 
   return (
-    <section className="artboard-wrap" data-testid="hero">
-      <div className="artboard overflow-hidden" style={{ height: u(927) }}>
+    /* Below 1024 the proportional artboard shrinks faster than the fixed-size
+       headline and pill inside it, so main brief 9 swaps in HeroMobile. */
+    <section className="artboard-wrap hidden lg:block" data-testid="hero">
+      <div className="artboard hero-artboard overflow-hidden">
         <div className="hero-bg" />
         <div className="grain hero-grain" />
 

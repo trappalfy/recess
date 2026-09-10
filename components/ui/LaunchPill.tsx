@@ -8,8 +8,8 @@ import { epochAt, formatCountdown } from "@/lib/recess/schedule";
 import { COPY } from "@/lib/copy";
 
 const ACTION_CLASS =
-  "flex h-full flex-1 items-center justify-center rounded-full text-white transition-colors duration-200 hover:bg-[#0D1238] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-white";
-const ACTION_STYLE = { fontFamily: "var(--font-inter)", fontSize: 18 } as const;
+  "flex h-full flex-1 items-center justify-center rounded-full text-[15px] text-white transition-colors duration-200 hover:bg-[#0D1238] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-white md:text-[18px]";
+const ACTION_STYLE = { fontFamily: "var(--font-inter)" } as const;
 
 /** Wallet state only exists in the browser, so this half waits for mount. */
 function PillAction() {
@@ -41,6 +41,7 @@ function PillAction() {
  * Corrective brief section 2. The 460x59 pill keeps the reference geometry.
  * White half: live countdown from the schedule, never from demo data.
  * Dark half: connect the wallet, or enter the app once connected.
+ * Main brief 9: below 768 it fills the width at height 54, split 60/40.
  */
 export function LaunchPill({ variant, id }: { variant: "hero" | "cta"; id?: string }) {
   const [clock, setClock] = useState<{ locked: boolean; left: string } | null>(null);
@@ -60,12 +61,12 @@ export function LaunchPill({ variant, id }: { variant: "hero" | "cta"; id?: stri
     <div
       id={id}
       data-testid={`launch-pill-${variant}`}
-      className="flex h-[59px] w-[460px] max-w-full items-center rounded-full bg-ink"
+      className="flex h-[54px] w-full max-w-[460px] items-center rounded-full bg-ink md:h-[59px] md:w-[460px]"
     >
       <Link
         href="/app"
-        className="flex h-full w-[288px] shrink-0 items-center gap-2 rounded-full border-2 border-ink bg-white px-[26px] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-blue"
-        style={{ fontFamily: "var(--font-inter)", fontSize: 18 }}
+        className="flex h-full w-[60%] shrink-0 items-center gap-2 whitespace-nowrap rounded-full border-2 border-ink bg-white px-4 text-[15px] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-blue md:w-[288px] md:px-[26px] md:text-[18px]"
+        style={{ fontFamily: "var(--font-inter)" }}
       >
         {clock === null ? (
           <span className="text-body">{COPY.hero.locksIn}</span>
