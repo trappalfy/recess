@@ -5,10 +5,16 @@
  * docs/asset-prompts.md, then run `npm run assets:import`. Each file is fitted
  * to its export size without distortion (a mismatched aspect is padded, never
  * stretched) and written to public/images/<group>/<name>.webp at quality 90.
+ *
+ * Any asset whose target background is transparent and that arrives without an
+ * alpha channel is cut out first. The five that must keep their ground —
+ * features/rails on white and the four showcase assets on #000320 — are never
+ * cut, because the size table gives them a real background colour.
  */
 import { readdirSync, existsSync, mkdirSync, statSync } from "node:fs";
 import { join, extname, basename } from "node:path";
 import sharp from "sharp";
+import { cutout } from "./cutout.mjs";
 
 const IN = "assets-in";
 const OUT = "public/images";
@@ -76,8 +82,16 @@ for (const [group, file] of files) {
   }
   const [w, h, bg] = spec;
   mkdirSync(join(OUT, group), { recursive: true });
-  const meta = await sharp(join(IN, group, file)).metadata();
-  await sharp(join(IN, group, file))
+  const path = join(IN, group, file);
+  const meta = await sharp(path).metadata();
+  let source = path;
+  let cut = "";
+  if (bg === T) {
+    const r = await cutout(path);
+    source = r.buffer;
+    cut = r.skipped ? "  (alpha already present)" : `  (cut out, ${r.clearedPct}% cleared, ground ${r.bg.join(",")})`;
+  }
+  await sharp(source)
     .resize(w, h, {
       fit: "contain",
       background: bg === T ? { r: 0, g: 0, b: 0, alpha: 0 } : rgb(bg),
@@ -87,7 +101,7 @@ for (const [group, file] of files) {
   const ratioIn = (meta.width / meta.height).toFixed(3);
   const ratioOut = (w / h).toFixed(3);
   const note = ratioIn === ratioOut ? "" : `  (padded: source ${meta.width}x${meta.height})`;
-  console.log(`  ${key}.webp  ${w}x${h}${note}`);
+  console.log(`  ${key}.webp  ${w}x${h}${note}${cut}`);
   done += 1;
 }
 
