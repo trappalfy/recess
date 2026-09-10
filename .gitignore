@@ -2,6 +2,9 @@ node_modules/
 .next/
 out/
 artifacts/
+
+# PNG masters for the image pipeline; only the exported WebP is committed.
+assets-in/
 .env*.local
 *.tsbuildinfo
 next-env.d.ts
