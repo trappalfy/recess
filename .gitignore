@@ -2,6 +2,8 @@ node_modules/
 .next/
 out/
 artifacts/
+test-results/
+playwright-report/
 
 # PNG masters for the image pipeline; only the exported WebP is committed.
 assets-in/
