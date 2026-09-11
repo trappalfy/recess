@@ -5,11 +5,11 @@ import { RECESS_CONFIG } from "@/lib/recess/config";
 
 /**
  * Update §3.3: before lock every multiplier is marked as an estimate. After
- * settlement only the winning side has one, and a void market has none.
+ * settlement each side still shows what it pays per 1 USDG (owner's call,
+ * 2026-09-11); a void market refunds, so it has none.
  */
 export function multiplierText(market: Market, side: Side): string {
   if (market.status === "Void") return "—";
-  if (market.status === "Settled" && market.winner !== side) return "—";
   const x = estimateMultiplier(market.poolAbove, market.poolBelow, side, RECESS_CONFIG.feeBps);
   if (x === null) return "—";
   return market.status === "Open" ? `est. ${x.toFixed(2)}x` : `${x.toFixed(2)}x`;
