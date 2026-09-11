@@ -6,6 +6,7 @@ import { Solution } from "@/components/sections/Solution";
 import { Showcase } from "@/components/sections/Showcase";
 import { Cta } from "@/components/sections/Cta";
 import { Footer } from "@/components/sections/Footer";
+import { FooterPlate } from "@/components/sections/FooterPlate";
 
 export default function Home() {
   return (
@@ -16,8 +17,12 @@ export default function Home() {
       <BlueSection>
         <Solution />
         <Showcase />
-        <Cta />
-        <Footer />
+        {/* One box for the last screen, so the plate can sit on the page bottom. */}
+        <div className="relative">
+          <FooterPlate />
+          <Cta />
+          <Footer />
+        </div>
       </BlueSection>
     </main>
   );

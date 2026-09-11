@@ -8,6 +8,7 @@ import { Float } from "@/components/ui/Float";
 import { Reveal } from "@/components/ui/Reveal";
 import { LaunchPill } from "@/components/ui/LaunchPill";
 import { Mark } from "@/components/ui/Mark";
+import { hasFooterPlate } from "./FooterPlate";
 import { COPY } from "@/lib/copy";
 import { u } from "@/lib/u";
 
@@ -25,6 +26,8 @@ export function Cta() {
        past the footer to the page edge, as on the reference. Below 768 the block
        follows its content and only the two coins stay, at half size. */
     <div className="cta-artboard relative" data-testid="cta">
+      {/* While the footer plate is present it carries these coins and chips. */}
+      {!hasFooterPlate && (
       <div className="hidden lg:block">
         <motion.div
           initial={reduced ? { opacity: 0 } : { opacity: 0, x: -80 }}
@@ -97,6 +100,7 @@ export function Cta() {
           />
         ))}
       </div>
+      )}
 
       {/* Main brief 9: below 1024 the coins halve and hang off both edges. */}
       <div className="lg:hidden">

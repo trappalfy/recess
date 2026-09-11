@@ -5,6 +5,8 @@ import { Lockup } from "@/components/ui/Lockup";
 import { BlurWords } from "@/components/ui/BlurWords";
 import { LaunchPill } from "@/components/ui/LaunchPill";
 import { AssetBox } from "@/components/ui/AssetBox";
+import { Asset } from "@/components/ui/Asset";
+import { AVAILABLE } from "@/lib/asset-manifest";
 import { Mark } from "@/components/ui/Mark";
 import { HeroDecor } from "./HeroDecor";
 import { COPY } from "@/lib/copy";
@@ -12,6 +14,9 @@ import { u } from "@/lib/u";
 
 export function Hero() {
   const reduced = useReducedMotion();
+  /* Trial: a finished hero illustration as one flat image. While the file is
+     present it replaces every layered asset; delete it to get them back. */
+  const single = AVAILABLE.has("hero/header.webp");
 
   /** Main brief 7.1: illustration emerges from blur. */
   const rise = (delay: number) =>
@@ -33,8 +38,21 @@ export function Hero() {
     <section className="artboard-wrap hidden lg:block" data-testid="hero">
       <div className="artboard hero-artboard overflow-hidden">
         <div className="hero-bg" />
+
+        {single && (
+          <motion.div
+            className="absolute left-0 top-0"
+            style={{ width: u(1905), height: u(927) }}
+            data-asset="hero/header.webp"
+            {...rise(0.15)}
+          >
+            <Asset src="hero/header.webp" intrinsic={{ w: 1798, h: 875 }} priority />
+          </motion.div>
+        )}
+
         <div className="grain hero-grain" />
 
+        {!single && (<>
         {/* Layer 2: coins behind the ribbon. */}
         <motion.div {...rise(0.15)}>
           <AssetBox
@@ -117,6 +135,7 @@ export function Hero() {
         </motion.div>
 
         <HeroDecor />
+        </>)}
 
         {/* Layer 5: lockup, headline, pill. */}
         <motion.div
