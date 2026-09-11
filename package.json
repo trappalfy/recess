@@ -14,7 +14,7 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "accept": "node scripts/acceptance.mjs",
-    "assets:import": "node scripts/import-assets.mjs && npm run assets"
+    "assets:import": "node scripts/import-assets.mjs && npm run assets && node -e \"for (const d of ['.next/cache/images', '.next/dev/cache/images']) require('fs').rmSync(d, { recursive: true, force: true })\""
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "^2.2.11",
