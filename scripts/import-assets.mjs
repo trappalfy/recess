@@ -22,12 +22,18 @@ const T = "transparent";
 
 /** Export size and background, transcribed from docs/asset-prompts.md. */
 const SPEC = {
+  /* Trial: one flat image for the whole desktop hero, kept at its native size. */
+  "hero/header": [1798, 875, "#FFFFFF"],
+  /* Trial: the last screen (CTA and footer) as one flat image, native size. */
+  "solution/footer": [1798, 875, "#0A68F5"],
+  /* Trial: the Solution screen as one flat image, native size. */
+  "solution/solution": [1796, 876, "#0A68F5"],
   "hero/ribbon": [3840, 968, T],
-  "hero/coin-tsla": [900, 900, T],
-  "hero/coin-nvda": [600, 600, T],
+  "hero/coin-tsla": [900, 900, T, { checker: true }],
+  "hero/coin-nvda": [600, 600, T, { shadow: true }],
   "hero/coin-aapl": [500, 500, T],
   "hero/coin-meta": [900, 900, T],
-  "hero/chip-up": [300, 250, T],
+  "hero/chip-up": [300, 250, T, { shadow: true }],
   "hero/chip-bell": [200, 200, T],
   "hero/chip-clock": [160, 160, T],
   "hero/chip-blank": [160, 160, T],
@@ -40,12 +46,13 @@ const SPEC = {
   "features/tile-pool": [180, 180, T],
   "features/tile-up": [180, 180, T],
   "features/sphere-dark": [260, 260, T],
-  "solution/toggle": [700, 400, T],
-  "solution/bell": [200, 200, T],
+  "solution/toggle": [700, 400, T, { shadow: true }],
+  "solution/bell": [200, 200, T, { checker: true }],
   "solution/cursor": [200, 240, T],
-  "solution/tray-coin": [700, 500, T],
+  "solution/tray-coin": [700, 500, T, { checker: true }],
   "showcase/orb": [600, 600, "#000320"],
-  "showcase/stack": [1100, 900, "#000320"],
+  /* Arrived with a painted checker: cut it, then lay the cards on the panel colour. */
+  "showcase/stack": [1100, 900, "#000320", { checker: true, cut: true }],
   "showcase/icon-up": [180, 180, "#000320"],
   "showcase/receipts": [1300, 650, "#000320"],
 };
@@ -62,6 +69,9 @@ if (!existsSync(IN)) {
   process.exit(0);
 }
 
+/* Optional keys on the command line limit the run, e.g. hero/coin-nvda. */
+const ONLY = new Set(process.argv.slice(2));
+
 const files = [];
 for (const group of readdirSync(IN)) {
   const dir = join(IN, group);
@@ -76,28 +86,31 @@ const unknown = [];
 const warn = [];
 for (const [group, file] of files) {
   const key = `${group}/${basename(file, extname(file))}`;
+  if (ONLY.size && !ONLY.has(key)) continue;
   const spec = SPEC[key];
   if (!spec) {
     unknown.push(`${group}/${file}`);
     continue;
   }
-  const [w, h, bg] = spec;
+  const [w, h, bg, opts = {}] = spec;
   mkdirSync(join(OUT, group), { recursive: true });
   const path = join(IN, group, file);
   const meta = await sharp(path).metadata();
   let source = path;
   let cut = "";
   let cleared = 0;
-  if (bg === T) {
+  if (bg === T || opts.cut) {
     /* JPEG (including the .jfif Windows hands out) rings around high-contrast
        edges, so the ground is never exactly one colour there; widen the band. */
     const lossy = meta.format === "jpeg";
-    const r = await cutout(path, lossy ? { solid: 26, keep: 78 } : {});
+    const r = await cutout(path, { ...(lossy ? { solid: 20, keep: 56 } : {}), ...opts });
     source = r.buffer;
     cleared = r.skipped ? 0 : r.clearedPct;
     cut = r.skipped ? "  (alpha already present)" : `  (cut out, ${cleared}% cleared, ground ${r.bg.join(",")})`;
   }
-  await sharp(source)
+  let img = sharp(source);
+  if (bg !== T) img = img.flatten({ background: rgb(bg) });
+  await img
     .resize(w, h, {
       fit: "contain",
       background: bg === T ? { r: 0, g: 0, b: 0, alpha: 0 } : rgb(bg),
@@ -108,7 +121,7 @@ for (const [group, file] of files) {
   const ratioOut = (w / h).toFixed(3);
   const note = ratioIn === ratioOut ? "" : `  (padded: source ${meta.width}x${meta.height})`;
   /* Two things that look fine in the log but ruin the asset on the page. */
-  if (cleared > 70) warn.push(`${key}: cutout cleared ${cleared}% — the object may be the same colour as its ground`);
+  if (cleared > 0 && cleared < 12) warn.push(`${key}: cutout cleared only ${cleared}% — the ground did not separate from the object`);
   if (meta.width < w / 2) warn.push(`${key}: source is ${meta.width}px wide for a ${w}px export — upscaling cannot add detail`);
   console.log(`  ${key}.webp  ${w}x${h}${note}${cut}`);
   done += 1;
