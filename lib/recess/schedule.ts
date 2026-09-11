@@ -5,7 +5,11 @@ export type Epoch = {
   label: string;
   openTime: number;
   lockTime: number;
-  status: "Open" | "Locked";
+  /**
+   * The schedule alone only knows Open and Locked. Settled needs the reference
+   * print, so only a RecessClient reports it.
+   */
+  status: "Open" | "Locked" | "Settled";
 };
 
 /** Corrective brief section 3.2. Holidays and shifts are listed here. */
