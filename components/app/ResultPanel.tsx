@@ -23,11 +23,9 @@ export function ResultPanel({ market, position }: { market: Market; position: Po
     ? null
     : market.poolAbove === 0n || market.poolBelow === 0n
       ? "One side was empty when betting closed."
-      : market.settleSimulated
-        ? "Voided by the demo controls."
-        : market.settlePrice === market.fridayClose
-          ? "The first print landed exactly on Friday’s close."
-          : "No fresh print arrived in time after the lock.";
+      : market.settlePrice === market.fridayClose
+        ? "The first print landed exactly on Friday’s close."
+        : "No fresh print arrived in time after the lock.";
 
   let body: React.ReactNode;
   if (!isConnected) {
@@ -94,7 +92,6 @@ export function ResultPanel({ market, position }: { market: Market; position: Po
             market.settlePrice !== null ? (
               <>
                 ${formatPrice(market.settlePrice)} <Move from={market.fridayClose} to={market.settlePrice} />
-                {market.settleSimulated && <span className="text-body"> · simulated</span>}
               </>
             ) : (
               "—"

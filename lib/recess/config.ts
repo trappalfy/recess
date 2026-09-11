@@ -14,6 +14,7 @@ export const RECESS_CONFIG = {
    * Chainlink reference feed (REFERENCE_FEEDS below), so every price is real.
    */
   tickers: ["NVDA", "TSLA", "AAPL", "META", "AMZN", "MSFT", "GOOGL", "COIN"] as const,
+  /** USDG on Robinhood Chain reports 6 decimals on chain. */
   usdgDecimals: 6,
 } as const;
 
@@ -37,16 +38,8 @@ export const REFERENCE_FEEDS: Record<Ticker, `0x${string}`> = {
   COIN: "0x950DC95D4E537A14283059bADC2734977C454498",
 };
 
-/**
- * Owner decision, 2026-09-11: until contracts exist, every button that would
- * sign a transaction (approve, stake, claim, refund) does nothing when pressed.
- * The rest of the app works in full. Flip to true to restore the simulated
- * transactions of the mock.
- */
-export const CONTRACT_ACTIONS_ENABLED = false;
-
+/** Update §5: every network value comes from env, nothing is hardcoded. */
 export const ENV = {
-  mode: process.env.NEXT_PUBLIC_RECESS_MODE ?? "mock",
   chainId: Number(process.env.NEXT_PUBLIC_CHAIN_ID ?? 0),
   chainName: process.env.NEXT_PUBLIC_CHAIN_NAME ?? "Robinhood Chain",
   rpcUrl: process.env.NEXT_PUBLIC_RPC_URL ?? "",
@@ -54,9 +47,14 @@ export const ENV = {
   usdgAddress: process.env.NEXT_PUBLIC_USDG_ADDRESS ?? "",
   marketsAddress: process.env.NEXT_PUBLIC_RECESS_MARKETS_ADDRESS ?? "",
   walletConnectId: process.env.NEXT_PUBLIC_WALLETCONNECT_ID ?? "",
-  /** Arbitrum One RPC for REFERENCE_FEEDS. Empty falls back to demo prices, marked as such. */
+  /** Arbitrum One RPC for REFERENCE_FEEDS. */
   priceRpcUrl: process.env.NEXT_PUBLIC_PRICE_RPC_URL ?? "",
 } as const;
 
-/** Corrective brief section 6: chain mode needs a markets address, otherwise mock. */
-export const isMock = (): boolean => ENV.mode !== "chain" || ENV.marketsAddress === "";
+/**
+ * Owner decision, 2026-09-11: the app runs on real data only, with no demo mode:
+ * a real browser wallet, its real USDG balance, real prices. Until the Recess
+ * contracts are connected, which is when a markets address is set in env, the
+ * pools read as empty and a button that would sign a transaction does nothing.
+ */
+export const contractsLive = (): boolean => ENV.marketsAddress !== "";

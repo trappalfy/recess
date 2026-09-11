@@ -1,13 +1,12 @@
 import type { Market, Position, Activity, Side, TxResult, TxOptions } from "./types";
 import type { Epoch } from "./schedule";
-import { ENV, isMock } from "./config";
-import { MockClient } from "./mock";
+import { ENV } from "./config";
 import { ChainClient } from "./chain";
 import { ChainlinkPrices } from "./prices";
 
 /**
  * Update §6: every screen talks to this interface and never to a chain directly,
- * so the contract stage swaps the adapter without touching the UI.
+ * so the contract stage fills in the adapter without touching the UI.
  */
 export interface RecessClient {
   getEpoch(): Promise<Epoch>;
@@ -19,8 +18,8 @@ export interface RecessClient {
   stake(marketId: string, side: Side, amount: bigint, opts?: TxOptions): Promise<TxResult>;
   claim(marketId: string, opts?: TxOptions): Promise<TxResult>;
   approveUsdg(amount: bigint, opts?: TxOptions): Promise<TxResult>;
-  /** USDG allowance already granted to the markets contract. */
-  getAllowance(address: `0x${string}`): Promise<bigint>;
+  /** USDG already approved to the markets contract; null while there is no contract to approve. */
+  getAllowance(address: `0x${string}`): Promise<bigint | null>;
   getUsdgBalance(address: `0x${string}`): Promise<bigint>;
   /** Calls back whenever anything the screens read may have changed. Returns an unsubscribe. */
   subscribe(onChange: () => void): () => void;
@@ -36,26 +35,7 @@ function browserStorage(): Storage | null {
   }
 }
 
-/**
- * Update §5: mock unless the mode is chain and a markets address is set. The
- * mock reads real prices from the Chainlink reference feeds whenever an RPC for
- * them is set in env.
- */
 export function getClient(): RecessClient {
-  if (!cached) {
-    const storage = browserStorage();
-    cached = isMock()
-      ? new MockClient({
-          storage,
-          prices: ENV.priceRpcUrl ? new ChainlinkPrices(ENV.priceRpcUrl, storage) : null,
-        })
-      : new ChainClient();
-  }
+  if (!cached) cached = new ChainClient({ prices: new ChainlinkPrices(ENV.priceRpcUrl, browserStorage()) });
   return cached;
-}
-
-/** The demo controls reach the mock through this; it is null in chain mode. */
-export function getMockClient(): MockClient | null {
-  const client = getClient();
-  return client instanceof MockClient ? client : null;
 }

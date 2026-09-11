@@ -23,10 +23,10 @@ function cleanAmount(v: string): string {
 }
 
 /**
- * Update §4, the right-hand panel: side toggle, USDG amount with balance and
- * Max, the payout and multiplier estimate, and the action button. The button
- * takes its label and state from resolveAction alone, so the order of update §5
- * cannot drift here.
+ * Update §4, the right-hand panel: side toggle, USDG amount with the wallet's
+ * real balance and Max, the payout and multiplier estimate, and the action
+ * button. The button takes its label and state from resolveAction alone, so
+ * the order of update §5 cannot drift here.
  */
 export function StakePanel({ market, position }: { market: Market; position: Position | null }) {
   const { address, isConnected, chainId } = useAccount();
@@ -36,14 +36,21 @@ export function StakePanel({ market, position }: { market: Market; position: Pos
   const [raw, setRaw] = useState("");
 
   const { data: wallet } = useRecess(
-    async (client) =>
-      address
-        ? { balance: await client.getUsdgBalance(address), allowance: await client.getAllowance(address) }
-        : null,
+    async (client) => {
+      if (!address) return null;
+      const [balance, allowance] = await Promise.allSettled([
+        client.getUsdgBalance(address),
+        client.getAllowance(address),
+      ]);
+      return {
+        balance: balance.status === "fulfilled" ? balance.value : null,
+        allowance: allowance.status === "fulfilled" ? allowance.value : null,
+      };
+    },
     [address],
   );
-  const balance = wallet?.balance ?? 0n;
-  const allowance = wallet?.allowance ?? 0n;
+  const balance = wallet?.balance ?? null;
+  const allowance = wallet?.allowance ?? null;
 
   const open = market.status === "Open";
   const amount = parseUsdg(raw);
@@ -111,7 +118,9 @@ export function StakePanel({ market, position }: { market: Market; position: Pos
 
       <div className="mt-6 flex items-baseline justify-between text-[14px] text-body">
         <label htmlFor="stake-amount">Amount</label>
-        <span className="tabular">Balance {isConnected ? formatUsdg(balance) : "—"} USDG</span>
+        <span className="tabular" data-testid="stake-balance">
+          Balance {isConnected && balance !== null ? formatUsdg(balance) : "—"} USDG
+        </span>
       </div>
       <div className="mt-2 flex h-14 items-center rounded-full border border-line pl-5 pr-2 focus-within:border-blue">
         <input
@@ -128,8 +137,8 @@ export function StakePanel({ market, position }: { market: Market; position: Pos
         <span className="ml-2 text-[15px] text-body">USDG</span>
         <button
           type="button"
-          onClick={() => setRaw(usdgToInput(balance))}
-          disabled={!open || !isConnected || tx.pending}
+          onClick={() => balance !== null && setRaw(usdgToInput(balance))}
+          disabled={!open || !isConnected || balance === null || tx.pending}
           className="ml-3 h-10 shrink-0 rounded-full bg-[#F1F4F9] px-4 text-[14px] text-ink transition-colors duration-200 enabled:hover:bg-[#E6EBF2] disabled:opacity-40"
         >
           Max

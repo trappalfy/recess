@@ -6,8 +6,8 @@ const base = {
   connected: true,
   rightNetwork: true,
   amount: 10_000_000n,
-  balance: 100_000_000n,
-  allowance: 100_000_000n,
+  balance: 100_000_000n as bigint | null,
+  allowance: 100_000_000n as bigint | null,
   minStake: 1_000_000n,
   side: "Above" as const,
   pending: false,
@@ -44,9 +44,19 @@ describe("resolveAction", () => {
       .toEqual({ kind: "balance", label: "Not enough USDG in your wallet", disabled: true });
   });
 
+  it("makes no balance claim when the balance could not be read", () => {
+    expect(resolveAction({ ...base, balance: null, allowance: null, amount: 200_000_000n }).kind).toBe("stake");
+  });
+
   it("asks for approval when the allowance is short", () => {
     expect(resolveAction({ ...base, allowance: 0n })).toEqual({
       kind: "approve", label: "Approve USDG", disabled: false,
+    });
+  });
+
+  it("skips the approval while there is no contract to approve", () => {
+    expect(resolveAction({ ...base, allowance: null })).toEqual({
+      kind: "stake", label: "Stake on Above", disabled: false,
     });
   });
 

@@ -8,25 +8,18 @@ import { MarketTable } from "./MarketTable";
 import { EtTime } from "./market-bits";
 import { CARD, H1_STYLE } from "./styles";
 
-/** Says where the prices on the board come from, and that pools are demo figures. */
+/** Says where the prices on the board come from, and how fresh they are. */
 function PriceNote({ markets }: { markets: Market[] }) {
-  const live = markets.some((m) => m.priceSource === "chainlink");
-  const latest = Math.max(0, ...markets.map((m) => m.priceAt ?? 0));
+  const latest = Math.max(0, ...markets.map((m) => m.priceAt));
   return (
     <p data-testid="price-note" className="mt-2 text-[13px] text-body">
-      {live ? (
+      Prices from Chainlink reference feeds
+      {latest > 0 && (
         <>
-          Prices from Chainlink reference feeds
-          {latest > 0 && (
-            <>
-              , last update <EtTime at={latest} />
-            </>
-          )}
-          . Pools and stakes are demo figures.
+          , last update <EtTime at={latest} />
         </>
-      ) : (
-        "Live prices are unavailable right now, so the prices shown are demo figures."
       )}
+      .
     </p>
   );
 }

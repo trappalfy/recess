@@ -1,7 +1,5 @@
 import type { Activity } from "@/lib/recess/types";
 import { formatUsdg } from "@/lib/recess/format";
-import { isMock } from "@/lib/recess/config";
-import { DEMO_USER } from "@/lib/recess/mock";
 import { SideDot } from "./market-bits";
 import { CARD, H2_STYLE } from "./styles";
 
@@ -18,8 +16,8 @@ function timeAgo(at: number, now: number): string {
 const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
 
 /**
- * Update §4: the latest stakes on this market. MockClient serves them today;
- * an event indexer takes over at the backend stage, through listActivity.
+ * Update §4: the latest stakes on this market. An event indexer serves them
+ * through listActivity once the contracts are live.
  */
 export function ActivityFeed({
   items,
@@ -31,8 +29,7 @@ export function ActivityFeed({
   className?: string;
 }) {
   const now = Date.now();
-  const mine = (a: Activity) =>
-    (me !== undefined && a.user.toLowerCase() === me.toLowerCase()) || (isMock() && a.user === DEMO_USER);
+  const mine = (a: Activity) => me !== undefined && a.user.toLowerCase() === me.toLowerCase();
 
   return (
     <section aria-labelledby="activity-title" className={`${CARD} p-6 sm:p-8 ${className}`}>

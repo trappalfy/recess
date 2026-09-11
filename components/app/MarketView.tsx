@@ -45,13 +45,7 @@ function KeyFigures({ market, className = "" }: { market: Market; className?: st
         <Figure
           label="Friday close"
           value={`$${formatPrice(market.fridayClose)}`}
-          note={
-            market.closeProvisional
-              ? "Latest price until Friday 4:00 PM ET"
-              : market.priceSource === "chainlink"
-                ? "Chainlink reference"
-                : "Demo price"
-          }
+          note={market.closeProvisional ? "Latest price; the feed had none at the close" : "Chainlink reference"}
         />
         <Figure
           label="Last price"
@@ -59,12 +53,8 @@ function KeyFigures({ market, className = "" }: { market: Market; className?: st
           note={
             <>
               <Move from={market.fridayClose} to={market.poolPrice} />
-              {market.priceAt !== null && (
-                <>
-                  {" · "}
-                  <EtTime at={market.priceAt} />
-                </>
-              )}
+              {" · "}
+              <EtTime at={market.priceAt} />
             </>
           }
         />
@@ -76,7 +66,6 @@ function KeyFigures({ market, className = "" }: { market: Market; className?: st
             note={
               <>
                 <Move from={market.fridayClose} to={market.settlePrice!} />
-                {market.settleSimulated && " · simulated"}
                 {market.settleAt !== null && (
                   <>
                     {" · "}

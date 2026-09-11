@@ -12,8 +12,10 @@ export type ActionInput = {
   connected: boolean;
   rightNetwork: boolean;
   amount: bigint;
-  balance: bigint;
-  allowance: bigint;
+  /** The wallet's USDG; null when it could not be read, and then no balance claim is made. */
+  balance: bigint | null;
+  /** USDG approved to the markets contract; null while there is no contract, so no approval step. */
+  allowance: bigint | null;
   /** Base units; update §10 leaves the value to agree, config holds it. */
   minStake: bigint;
   side: Side;
@@ -36,10 +38,12 @@ export function resolveAction(i: ActionInput): Action {
   if (i.amount < i.minStake) {
     return { kind: "amount", label: `Minimum stake is ${usdgToInput(i.minStake)} USDG`, disabled: true };
   }
-  if (i.amount > i.balance) {
+  if (i.balance !== null && i.amount > i.balance) {
     return { kind: "balance", label: "Not enough USDG in your wallet", disabled: true };
   }
-  if (i.allowance < i.amount) return { kind: "approve", label: "Approve USDG", disabled: false };
+  if (i.allowance !== null && i.allowance < i.amount) {
+    return { kind: "approve", label: "Approve USDG", disabled: false };
+  }
   return { kind: "stake", label: `Stake on ${i.side}`, disabled: false };
 }
 

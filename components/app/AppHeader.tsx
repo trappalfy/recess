@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Lockup } from "@/components/ui/Lockup";
-import { isMock } from "@/lib/recess/config";
 import { formatUsdg } from "@/lib/recess/format";
 import { useRecess } from "@/lib/recess/use-recess";
 import { PILL_DARK } from "./styles";
@@ -41,19 +40,7 @@ function AppNav({ className = "" }: { className?: string }) {
   );
 }
 
-/** Update §6: always visible in mock mode, so demo figures are never taken for real ones. */
-function DemoBadge({ className = "" }: { className?: string }) {
-  return (
-    <span
-      className={`h-7 items-center gap-2 rounded-full border border-line px-3 text-[13px] text-ink ${className}`}
-      title="Pools, stakes and positions are demonstration data, not a live market."
-    >
-      <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-blue" />
-      Demo data
-    </span>
-  );
-}
-
+/** The connected wallet's real USDG balance on Robinhood Chain, with its address. */
 function WalletButton() {
   const { address } = useAccount();
   const { data: balance } = useRecess(
@@ -103,20 +90,17 @@ function WalletButton() {
  * ground the lockup turns ink. Below 768 the nav drops to a second row.
  */
 export function AppHeader() {
-  const mock = isMock();
   return (
     <header className="border-b border-line bg-white">
       <div className="container-recess relative flex h-[68px] items-center gap-4">
         <Lockup markHeight={24} wordSize={28} gap={8} className="text-ink" />
         <AppNav className="hidden md:absolute md:left-1/2 md:flex md:-translate-x-1/2" />
         <div className="ml-auto flex items-center gap-3">
-          {mock && <DemoBadge className="hidden md:inline-flex" />}
           <WalletButton />
         </div>
       </div>
-      <div className="container-recess flex h-12 items-center justify-between md:hidden">
+      <div className="container-recess flex h-12 items-center md:hidden">
         <AppNav className="-ml-4 flex" />
-        {mock && <DemoBadge className="inline-flex" />}
       </div>
     </header>
   );

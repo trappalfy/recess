@@ -3,34 +3,24 @@ import { injectedWallet, walletConnectWallet } from "@rainbow-me/rainbowkit/wall
 import { custom } from "viem";
 import { createConfig, http } from "wagmi";
 import { robinhoodChain } from "./chain";
-import { demoWallet } from "./demo-wallet";
-import { ENV, isMock } from "@/lib/recess/config";
+import { ENV } from "@/lib/recess/config";
 
 /**
  * Built by hand rather than through getDefaultConfig, which bundles the Coinbase
- * Base Account connector and always initialises WalletConnect. Without a real
- * project id WalletConnect calls out to reown.com and is refused, so it only
- * joins the list once one is present in env.
+ * Base Account connector and always initialises WalletConnect. Browser wallets
+ * connect through the injected provider, and wagmi also lists every extension
+ * that announces itself (EIP-6963). WalletConnect joins once a project id is in env.
  */
 const wallets = ENV.walletConnectId
   ? [injectedWallet, walletConnectWallet]
   : [injectedWallet];
 
-/** In mock mode the demo wallet comes first, in a group of its own. */
-const groups = [
-  ...(isMock() ? [{ groupName: "Demo", wallets: [demoWallet] }] : []),
-  { groupName: "Wallets", wallets },
-];
-
-const connectors = connectorsForWallets(groups, {
+const connectors = connectorsForWallets([{ groupName: "Wallets", wallets }], {
   appName: "Recess",
   projectId: ENV.walletConnectId || "recess-local",
 });
 
-/**
- * With no RPC in env (mock mode, or before env is filled in) chain reads fail at
- * once, instead of calling out to the chain definition's localhost placeholder.
- */
+/** With no RPC in env, chain reads fail at once instead of calling a placeholder. */
 const noRpc = custom({
   request: async () => {
     throw new Error("No RPC URL is configured.");

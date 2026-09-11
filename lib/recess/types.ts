@@ -9,7 +9,10 @@ export type Market = {
   ticker: string;
   /** Reference price at the Friday close. */
   fridayClose: number;
-  /** Current token price in the DEX pool. Informational only (update §3.1). */
+  /**
+   * The latest reference price, shown for information. Update §3.1 puts the
+   * token's DEX pool price here; there is no Recess pool yet, so the feed stands in.
+   */
   poolPrice: number;
   /** USDG in base units. */
   poolAbove: bigint;
@@ -20,19 +23,12 @@ export type Market = {
   winner: Side | null;
   openTime: number;
   lockTime: number;
-  /**
-   * The fields below describe where the prices come from, so the UI can say so.
-   * They are not part of the contract's market struct.
-   */
-  /** Chainlink reference feeds, or demo seeds when the feeds cannot be read. */
-  priceSource: "chainlink" | "demo";
-  /** When the last price was written, ms; null for demo prices. */
-  priceAt: number | null;
-  /** Friday's close is still ahead, so fridayClose holds the latest price for now. */
+  /* The three below come from the reference feed, not the contract's market struct. */
+  /** When the latest price was written, ms. */
+  priceAt: number;
+  /** The feed had no value at Friday's close, so fridayClose holds the latest price instead. */
   closeProvisional: boolean;
-  /** The settle print was made up by the demo controls rather than read from the feed. */
-  settleSimulated: boolean;
-  /** When the feed wrote the settle print, ms; null until there is one, or when simulated. */
+  /** When the feed wrote the settle print, ms; null until there is one. */
   settleAt: number | null;
 };
 
