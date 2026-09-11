@@ -1,19 +1,25 @@
 import Link from "next/link";
-import { X, Send, GitBranch, BookOpen } from "lucide-react";
+import type { SVGProps } from "react";
 import { COPY } from "@/lib/copy";
 
 /**
- * Links stay placeholders until corrective brief section 10 supplies them.
- * These are neutral glyphs, not brand marks: lucide dropped its brand icons,
- * and main brief section 1 rules out company logos anyway. Each link carries
- * an aria-label, so the destination is still announced correctly.
+ * The X mark, path from Simple Icons (CC0). lucide dropped its brand icons, and
+ * its own "X" is a close cross, which reads as a close button, not a social link.
  */
-const SOCIALS = [
-  { Icon: X, label: "X" },
-  { Icon: Send, label: "Telegram" },
-  { Icon: GitBranch, label: "GitHub" },
-  { Icon: BookOpen, label: "Docs" },
-];
+function XMark({ size = 18, ...props }: SVGProps<SVGSVGElement> & { size?: number }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor" {...props}>
+      <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
+    </svg>
+  );
+}
+
+/**
+ * Links stay placeholders until corrective brief section 10 supplies them.
+ * The owner kept X as the only social link. The aria-label names the network,
+ * because a bare "X" is read out like a close button.
+ */
+const SOCIALS = [{ Icon: XMark, label: "X (Twitter)" }];
 
 export function Footer() {
   return (
@@ -46,8 +52,7 @@ export function Footer() {
         </p>
       </div>
 
-      {/* Main brief 6.5: centres at x 844 / 916 / 988 / 1060, so the row is
-          centred on the page rather than pushed to the right edge. */}
+      {/* Centred on the page, as the brief's four-icon row was (its centre, x 952). */}
       <ul className="order-1 flex gap-[22px] md:absolute md:left-1/2 md:top-0 md:order-2 md:-translate-x-1/2">
         {SOCIALS.map(({ Icon, label }) => (
           <li key={label}>
