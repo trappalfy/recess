@@ -15,8 +15,6 @@ export const AVAILABLE = new Set<string>([
   "hero/coin-nvda.webp",
   "hero/coin-tsla.webp",
   "hero/header.webp",
-  "showcase/icon-up.webp",
-  "showcase/orb.webp",
   "solution/footer.webp",
   "solution/solution.webp",
   "solution/toggle.webp",

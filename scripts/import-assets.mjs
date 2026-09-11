@@ -50,11 +50,6 @@ const SPEC = {
   "solution/bell": [200, 200, T, { checker: true }],
   "solution/cursor": [200, 240, T],
   "solution/tray-coin": [700, 500, T, { checker: true }],
-  "showcase/orb": [600, 600, "#000320"],
-  /* Arrived with a painted checker: cut it, then lay the cards on the panel colour. */
-  "showcase/stack": [1100, 900, "#000320", { checker: true, cut: true }],
-  "showcase/icon-up": [180, 180, "#000320"],
-  "showcase/receipts": [1300, 650, "#000320"],
 };
 
 const rgb = (hex) => ({

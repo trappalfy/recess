@@ -66,8 +66,6 @@ export const COPY = {
         ],
       },
     ],
-    slide2: { title: "NVDA Pool", sub: "Open until the reference wakes up." },
-    slide3: { pill: "Settled" },
   },
   cta: {
     h2: "Be There When the Bell Rings",
