@@ -4,6 +4,7 @@ import { epochAt, type Epoch } from "./schedule";
 import { ENV, RECESS_CONFIG, contractsLive } from "./config";
 import type { RecessClient } from "./client";
 import type { PriceSource, ReferencePrices } from "./prices";
+import { samplePool } from "./sample-pools";
 import { robinhoodChain } from "@/lib/wallet/chain";
 
 const NOT_LIVE = "The Recess contracts are not live yet.";
@@ -47,8 +48,8 @@ const scheduleStatus = (epoch: Epoch, now: number): Epoch["status"] => (now < ep
 /**
  * The real adapter (update §6). The weekend comes from the schedule, prices
  * from the Chainlink reference feeds, and the wallet's USDG from Robinhood
- * Chain through the RPC in env. Everything the contracts will hold (pools,
- * positions, allowance) reads as empty until a markets address is set.
+ * Chain through the RPC in env. Until a markets address is set the pools show
+ * placeholder figures (sample-pools.ts), and positions and allowance read empty.
  * TODO(contracts): read and write through RECESS_MARKETS_ABI at ENV.marketsAddress.
  * TODO(indexer): listActivity needs an event indexer.
  */
@@ -66,7 +67,11 @@ export class ChainClient implements RecessClient {
     const now = this.now();
     const epoch = epochAt(now);
     const refs = await this.prices.load(epoch);
-    const markets = RECESS_CONFIG.tickers.map((ticker) => marketFrom(ticker, epoch, refs[ticker], now));
+    const markets = RECESS_CONFIG.tickers
+      .map((ticker) => marketFrom(ticker, epoch, refs[ticker], now))
+      .map((m) =>
+        contractsLive() ? m : { ...m, poolAbove: samplePool(m.id, "Above"), poolBelow: samplePool(m.id, "Below") },
+      );
     const printed = markets.some((m) => m.settlePrice !== null);
     const status = now < epoch.lockTime ? "Open" : printed ? "Settled" : "Locked";
     return { epoch: { ...epoch, status }, markets };

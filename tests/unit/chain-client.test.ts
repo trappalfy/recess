@@ -77,6 +77,21 @@ describe("ChainClient before the contracts are live", () => {
     await expect(c.listMarkets("2026-09-11")).rejects.toThrow(/rpc down/);
   });
 
+  it("shows placeholder pools of 200 to 800 USDG a side, the same on every load", async () => {
+    const c = new ChainClient({ prices: source(), now: () => SATURDAY });
+    const markets = await c.listMarkets("2026-09-11");
+    for (const m of markets) {
+      for (const pool of [m.poolAbove, m.poolBelow]) {
+        expect(pool).toBeGreaterThanOrEqual(200_000_000n);
+        expect(pool).toBeLessThanOrEqual(800_000_000n);
+        expect(pool % 10_000n).toBe(0n);
+      }
+    }
+    expect(new Set(markets.map((m) => m.poolAbove)).size).toBeGreaterThan(1);
+    expect((await c.listMarkets("2026-09-11")).map((m) => [m.poolAbove, m.poolBelow]))
+      .toEqual(markets.map((m) => [m.poolAbove, m.poolBelow]));
+  });
+
   it("has no positions, no activity and nothing to approve yet", async () => {
     const c = new ChainClient({ prices: source(), now: () => SATURDAY });
     expect(await c.getPositions(ME)).toEqual([]);
