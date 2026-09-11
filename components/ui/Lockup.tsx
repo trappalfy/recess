@@ -15,7 +15,7 @@ export function Lockup({
 }) {
   return (
     <Link href="/" aria-label="Recess" className={`inline-flex items-center ${className}`} style={{ gap }}>
-      <Mark height={markHeight} />
+      <Mark height={markHeight} priority />
       <Wordmark size={wordSize} />
     </Link>
   );

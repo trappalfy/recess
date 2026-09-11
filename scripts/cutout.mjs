@@ -155,7 +155,7 @@ function checkerSize(px, w, A, B) {
   return runs.length ? runs[runs.length >> 1] : 16;
 }
 
-export async function cutout(input, { solid = 12, keep = 42, shadow = false, checker = false, islands = true } = {}) {
+export async function cutout(input, { solid = 12, keep = 42, shadow = false, checker = false, islands = true, holes = false, islandShare = 0.08 } = {}) {
   const { data, info } = await sharp(input)
     .ensureAlpha()
     .raw()
@@ -270,8 +270,11 @@ export async function cutout(input, { solid = 12, keep = 42, shadow = false, che
   };
   for (const p of borderIndices(w, h)) visit(p);
 
-  /* Enclosed checker patches pass the same rhythm test, so seed them too. */
-  if (tones) {
+  /* Enclosed ground: checker patches pass the same rhythm test, and with
+     `holes` any enclosed region that matches the ground model goes too, such
+     as the windows cut through a mark. Off by default: a plain object has no
+     holes, and a stray ground-coloured highlight inside it must stay. */
+  if (tones || holes) {
     for (let y = 0; y < h; y += 2) {
       for (let x = 0; x < w; x += 2) {
         const p = y * w + x;
@@ -335,7 +338,7 @@ export async function cutout(input, { solid = 12, keep = 42, shadow = false, che
     let biggest = 0;
     for (const s of sizes) if (s > biggest) biggest = s;
     for (let p = 0; p < n; p++) {
-      if (label[p] >= 0 && sizes[label[p]] < biggest * 0.08) alpha[p] = 0;
+      if (label[p] >= 0 && sizes[label[p]] < biggest * islandShare) alpha[p] = 0;
     }
     /* Haze: partial pixels with nothing solid within two pixels. */
     const drop = [];
