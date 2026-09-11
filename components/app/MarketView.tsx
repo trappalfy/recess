@@ -42,13 +42,29 @@ function KeyFigures({ market, className = "" }: { market: Market; className?: st
   return (
     <section aria-label="Key figures" className={`${CARD} p-6 sm:p-8 ${className}`}>
       <dl className="tabular grid grid-cols-2 gap-x-6 gap-y-6 md:grid-cols-4">
-        <Figure label="Friday close" value={`$${formatPrice(market.fridayClose)}`} note="Reference price" />
         <Figure
-          label="Pool price"
+          label="Friday close"
+          value={`$${formatPrice(market.fridayClose)}`}
+          note={
+            market.closeProvisional
+              ? "Latest price until Friday 4:00 PM ET"
+              : market.priceSource === "chainlink"
+                ? "Chainlink reference"
+                : "Demo price"
+          }
+        />
+        <Figure
+          label="Last price"
           value={`$${formatPrice(market.poolPrice)}`}
           note={
             <>
-              <Move from={market.fridayClose} to={market.poolPrice} /> · for information
+              <Move from={market.fridayClose} to={market.poolPrice} />
+              {market.priceAt !== null && (
+                <>
+                  {" · "}
+                  <EtTime at={market.priceAt} />
+                </>
+              )}
             </>
           }
         />
@@ -57,7 +73,18 @@ function KeyFigures({ market, className = "" }: { market: Market; className?: st
           <Figure
             label="First print"
             value={`$${formatPrice(market.settlePrice!)}`}
-            note={<Move from={market.fridayClose} to={market.settlePrice!} />}
+            note={
+              <>
+                <Move from={market.fridayClose} to={market.settlePrice!} />
+                {market.settleSimulated && " · simulated"}
+                {market.settleAt !== null && (
+                  <>
+                    {" · "}
+                    <EtTime at={market.settleAt} />
+                  </>
+                )}
+              </>
+            }
           />
         ) : (
           <Figure

@@ -9,10 +9,41 @@ export const RECESS_CONFIG = {
   voidAfterHours: 12,
   /** TO AGREE. Minimum stake in USDG. */
   minStake: 1,
-  /** TO AGREE. Launch ticker list. */
-  tickers: ["NVDA", "TSLA", "AAPL", "META", "HIMS"] as const,
+  /**
+   * TO AGREE for launch. Owner decision, 2026-09-11: every ticker with a public
+   * Chainlink reference feed (REFERENCE_FEEDS below), so every price is real.
+   */
+  tickers: ["NVDA", "TSLA", "AAPL", "META", "AMZN", "MSFT", "GOOGL", "COIN"] as const,
   usdgDecimals: 6,
 } as const;
+
+export type Ticker = (typeof RECESS_CONFIG.tickers)[number];
+
+/**
+ * Chainlink reference feed per ticker (update §3.1): the proxy addresses of the
+ * equity feeds on Arbitrum One, from Chainlink's data directory, each checked
+ * on chain to describe itself as "<TICKER> / USD" with 8 decimals. They stand
+ * in until Recess has its own feeds on Robinhood Chain. The RPC that reads them
+ * comes from env.
+ */
+export const REFERENCE_FEEDS: Record<Ticker, `0x${string}`> = {
+  NVDA: "0x4881A4418b5F2460B21d6F08CD5aA0678a7f262F",
+  TSLA: "0x3609baAa0a9b1f0FE4d6CC01884585d0e191C3E3",
+  AAPL: "0x8d0CC5f38f9E802475f2CFf4F9fc7000C2E1557c",
+  META: "0xcd1bd86fDc33080DCF1b5715B6FCe04eC6F85845",
+  AMZN: "0xd6a77691f071E98Df7217BED98f38ae6d2313EBA",
+  MSFT: "0xDde33fb9F21739602806580bdd73BAd831DcA867",
+  GOOGL: "0x1D1a83331e9D255EB1Aaf75026B60dFD00A252ba",
+  COIN: "0x950DC95D4E537A14283059bADC2734977C454498",
+};
+
+/**
+ * Owner decision, 2026-09-11: until contracts exist, every button that would
+ * sign a transaction (approve, stake, claim, refund) does nothing when pressed.
+ * The rest of the app works in full. Flip to true to restore the simulated
+ * transactions of the mock.
+ */
+export const CONTRACT_ACTIONS_ENABLED = false;
 
 export const ENV = {
   mode: process.env.NEXT_PUBLIC_RECESS_MODE ?? "mock",
@@ -23,6 +54,8 @@ export const ENV = {
   usdgAddress: process.env.NEXT_PUBLIC_USDG_ADDRESS ?? "",
   marketsAddress: process.env.NEXT_PUBLIC_RECESS_MARKETS_ADDRESS ?? "",
   walletConnectId: process.env.NEXT_PUBLIC_WALLETCONNECT_ID ?? "",
+  /** Arbitrum One RPC for REFERENCE_FEEDS. Empty falls back to demo prices, marked as such. */
+  priceRpcUrl: process.env.NEXT_PUBLIC_PRICE_RPC_URL ?? "",
 } as const;
 
 /** Corrective brief section 6: chain mode needs a markets address, otherwise mock. */

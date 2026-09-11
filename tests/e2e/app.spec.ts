@@ -5,11 +5,12 @@ test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("recess-jurisdiction-ack", "1"));
 });
 
-const stage = (page: Page, name: "Open" | "Locked" | "Settled" | "Void") =>
+const stage = (page: Page, name: "Live" | "Open" | "Locked" | "Settled" | "Void") =>
   page.getByRole("group", { name: "Demo stage" }).getByRole("button", { name, exact: true }).click();
 
 const action = (page: Page) => page.getByTestId("stake-action");
-const toast = (page: Page, text: string) => page.getByTestId("toast").filter({ hasText: text }).first();
+const sideButton = (page: Page, side: "Above" | "Below") =>
+  page.getByRole("group", { name: "Side" }).getByRole("button", { name: new RegExp(side) });
 
 async function connectDemoWallet(page: Page) {
   await page.getByRole("button", { name: "Connect wallet" }).first().click();
@@ -17,20 +18,16 @@ async function connectDemoWallet(page: Page) {
   await expect(page.getByTestId("account-chip")).toContainText("5,000.00 USDG");
 }
 
-/** Approve then stake, the two transactions update §5 asks for. */
-async function stake(page: Page, side: "Above" | "Below", amount: string) {
-  await page.getByRole("group", { name: "Side" }).getByRole("button", { name: new RegExp(side) }).click();
-  await page.getByTestId("stake-amount").fill(amount);
-  await expect(action(page)).toHaveText("Approve USDG");
-  await action(page).click();
-  await expect(action(page)).toHaveText(`Stake on ${side}`);
-  await action(page).click();
-  await expect(toast(page, "Stake placed")).toBeVisible();
-}
-
 test("the board lists a market for every configured ticker", async ({ page }) => {
   await page.goto("/app");
   await expect(page.getByTestId("market-row").filter({ visible: true })).toHaveCount(RECESS_CONFIG.tickers.length);
+});
+
+test("prices come from the Chainlink reference feeds", async ({ page }) => {
+  await page.goto("/app");
+  await expect(page.getByTestId("price-note")).toContainText("Prices from Chainlink reference feeds", {
+    timeout: 30_000,
+  });
 });
 
 test("the demo badge is visible while the app runs on mock data", async ({ page }) => {
@@ -51,11 +48,13 @@ test("a disconnected visitor is asked to connect before staking", async ({ page 
   await expect(action(page)).toHaveText("Connect wallet");
 });
 
-test("a locked market closes the panel", async ({ page }) => {
+test("a locked market closes the panel, and Live returns to the schedule", async ({ page }) => {
   await page.goto("/app/NVDA");
   await stage(page, "Locked");
   await expect(action(page)).toHaveText("Betting is closed. Settles at the open.");
   await expect(action(page)).toBeDisabled();
+  await stage(page, "Live");
+  await expect(page.getByRole("button", { name: "Live", exact: true })).toHaveAttribute("aria-pressed", "true");
 });
 
 test("the legal gate appears on a first visit", async ({ page }) => {
@@ -69,49 +68,30 @@ test("the legal gate appears on a first visit", async ({ page }) => {
   await expect(page.getByRole("dialog")).toBeHidden();
 });
 
-test("update §9: stake both sides, settle and claim, then void and refund", async ({ page }) => {
+test("the panel works in full, but buttons that would sign a transaction do nothing", async ({ page }) => {
   await page.goto("/app/NVDA");
   await stage(page, "Open");
   await connectDemoWallet(page);
 
+  await sideButton(page, "Below").click();
+  await expect(sideButton(page, "Below")).toHaveAttribute("aria-pressed", "true");
   await page.getByTestId("stake-amount").fill("0.5");
   await expect(action(page)).toHaveText("Minimum stake is 1 USDG");
   await page.getByTestId("stake-amount").fill("999999");
   await expect(action(page)).toHaveText("Not enough USDG in your wallet");
+  await page.getByTestId("stake-amount").fill("10");
+  await expect(page.getByText("Payout if Below wins, est.")).toBeVisible();
+  await expect(action(page)).toHaveText("Approve USDG");
 
-  await stake(page, "Above", "10");
-  await stake(page, "Below", "5");
-  await expect(page.getByTestId("my-position")).toHaveText("Your position: Above 10.00 USDG · Below 5.00 USDG");
+  await action(page).click();
+  await page.waitForTimeout(2500);
+  await expect(action(page)).toHaveText("Approve USDG");
+  await expect(page.getByTestId("toast")).toHaveCount(0);
+  await expect(page.getByTestId("stake-amount")).toHaveValue("10");
+  await expect(page.getByTestId("account-chip")).toContainText("5,000.00 USDG");
 
   await stage(page, "Settled");
-  await expect(action(page)).toHaveText("Claim");
-  await action(page).click();
-  await expect(toast(page, "Payout claimed")).toBeVisible();
-  await expect(page.getByText(/^Claimed [\d,.]+ USDG\.$/)).toBeVisible();
-
-  await stage(page, "Open");
-  await stake(page, "Above", "10");
-  await stage(page, "Void");
-  await action(page).click();
-  await expect(toast(page, "Refund received")).toBeVisible();
-  await expect(page.getByText("Refunded 10.00 USDG.")).toBeVisible();
-});
-
-test("update §5: a wallet rejection and a chain failure each name themselves", async ({ page }) => {
-  await page.goto("/app/TSLA");
-  await stage(page, "Open");
-  await connectDemoWallet(page);
-  await page.getByTestId("stake-amount").fill("10");
-
-  await page.getByLabel("Next transaction").selectOption("reject");
-  await action(page).click();
-  await expect(toast(page, "Transaction rejected in wallet")).toBeVisible();
-
-  await page.getByLabel("Next transaction").selectOption("fail");
-  await action(page).click();
-  await expect(action(page)).toHaveText("Confirming…");
-  await expect(toast(page, "Transaction failed. Try again.")).toBeVisible();
-  await expect(action(page)).toHaveText("Approve USDG");
+  await expect(page.getByText("You had no stake in this market.")).toBeVisible();
 });
 
 test("the portfolio points an empty wallet back to the board", async ({ page }) => {

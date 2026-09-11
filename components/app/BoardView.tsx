@@ -3,9 +3,33 @@
 import { useAccount } from "wagmi";
 import { formatUsdg } from "@/lib/recess/format";
 import { useRecess } from "@/lib/recess/use-recess";
-import type { Position } from "@/lib/recess/types";
+import type { Market, Position } from "@/lib/recess/types";
 import { MarketTable } from "./MarketTable";
+import { EtTime } from "./market-bits";
 import { CARD, H1_STYLE } from "./styles";
+
+/** Says where the prices on the board come from, and that pools are demo figures. */
+function PriceNote({ markets }: { markets: Market[] }) {
+  const live = markets.some((m) => m.priceSource === "chainlink");
+  const latest = Math.max(0, ...markets.map((m) => m.priceAt ?? 0));
+  return (
+    <p data-testid="price-note" className="mt-2 text-[13px] text-body">
+      {live ? (
+        <>
+          Prices from Chainlink reference feeds
+          {latest > 0 && (
+            <>
+              , last update <EtTime at={latest} />
+            </>
+          )}
+          . Pools and stakes are demo figures.
+        </>
+      ) : (
+        "Live prices are unavailable right now, so the prices shown are demo figures."
+      )}
+    </p>
+  );
+}
 
 /**
  * Update §4, the board: every market of the current weekend. Data loads in the
@@ -36,6 +60,7 @@ export function BoardView() {
             One question per ticker: will the first print after the weekend land above or below
             Friday&rsquo;s close?
           </p>
+          {data && <PriceNote markets={data.markets} />}
         </div>
         {data && (
           <dl className="tabular flex gap-8">

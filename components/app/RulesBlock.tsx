@@ -18,7 +18,8 @@ export function RulesBlock({ market, className = "" }: { market: Market; classNa
         <li>
           <span className={lead} style={{ fontWeight: 500 }}>Reference. </span>
           The first fresh print of the {market.ticker} Chainlink reference feed after the weekend decides the
-          market. The DEX pool price is shown for information and plays no part in settlement.
+          market. The last price on this page reads the same feed as it moves; only that first print after the
+          weekend counts.
         </li>
         <li>
           <span className={lead} style={{ fontWeight: 500 }}>Outcome. </span>

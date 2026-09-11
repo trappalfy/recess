@@ -20,6 +20,20 @@ export type Market = {
   winner: Side | null;
   openTime: number;
   lockTime: number;
+  /**
+   * The fields below describe where the prices come from, so the UI can say so.
+   * They are not part of the contract's market struct.
+   */
+  /** Chainlink reference feeds, or demo seeds when the feeds cannot be read. */
+  priceSource: "chainlink" | "demo";
+  /** When the last price was written, ms; null for demo prices. */
+  priceAt: number | null;
+  /** Friday's close is still ahead, so fridayClose holds the latest price for now. */
+  closeProvisional: boolean;
+  /** The settle print was made up by the demo controls rather than read from the feed. */
+  settleSimulated: boolean;
+  /** When the feed wrote the settle print, ms; null until there is one, or when simulated. */
+  settleAt: number | null;
 };
 
 export type Position = {

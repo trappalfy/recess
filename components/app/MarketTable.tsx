@@ -76,7 +76,7 @@ export function MarketTable({ markets, positions }: { markets: Market[]; positio
                 <tr className="border-b border-line text-left text-[13px] text-body">
                   <th scope="col" className={`${TH} pl-6`}>Ticker</th>
                   <th scope="col" className={TH}>Friday close</th>
-                  <th scope="col" className={TH}>Pool price</th>
+                  <th scope="col" className={TH}>Last price</th>
                   <th scope="col" className={`${TH} text-right`}>
                     <span className="inline-flex items-center gap-2"><SideDot side="Above" />Above</span>
                   </th>
@@ -153,7 +153,7 @@ export function MarketTable({ markets, positions }: { markets: Market[]; positio
                       </span>
                     </div>
                     <div className="tabular text-right text-[14px]">
-                      <span className="block text-body">Pool price</span>
+                      <span className="block text-body">Last price</span>
                       <span className="text-ink">${formatPrice(m.poolPrice)}</span>{" "}
                       <Move from={m.fridayClose} to={m.poolPrice} />
                     </div>

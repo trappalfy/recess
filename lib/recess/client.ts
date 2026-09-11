@@ -1,8 +1,9 @@
 import type { Market, Position, Activity, Side, TxResult, TxOptions } from "./types";
 import type { Epoch } from "./schedule";
-import { isMock } from "./config";
+import { ENV, isMock } from "./config";
 import { MockClient } from "./mock";
 import { ChainClient } from "./chain";
+import { ChainlinkPrices } from "./prices";
 
 /**
  * Update §6: every screen talks to this interface and never to a chain directly,
@@ -35,9 +36,21 @@ function browserStorage(): Storage | null {
   }
 }
 
-/** Update §5: mock unless the mode is chain and a markets address is set. */
+/**
+ * Update §5: mock unless the mode is chain and a markets address is set. The
+ * mock reads real prices from the Chainlink reference feeds whenever an RPC for
+ * them is set in env.
+ */
 export function getClient(): RecessClient {
-  if (!cached) cached = isMock() ? new MockClient({ storage: browserStorage() }) : new ChainClient();
+  if (!cached) {
+    const storage = browserStorage();
+    cached = isMock()
+      ? new MockClient({
+          storage,
+          prices: ENV.priceRpcUrl ? new ChainlinkPrices(ENV.priceRpcUrl, storage) : null,
+        })
+      : new ChainClient();
+  }
   return cached;
 }
 

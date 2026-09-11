@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import type { TxOptions, TxResult } from "@/lib/recess/types";
-import { ENV, isMock } from "@/lib/recess/config";
+import { CONTRACT_ACTIONS_ENABLED, ENV, isMock } from "@/lib/recess/config";
 import { txErrorMessage } from "@/lib/recess/action-state";
 import { useToast } from "./Toast";
 
@@ -15,7 +15,8 @@ function txUrl(hash: `0x${string}`): string | undefined {
 /**
  * Update §5's transaction toasts in one place: `Confirming…` with an explorer
  * link once the wallet signs, the success message on confirmation, and the
- * reason on rejection or failure.
+ * reason on rejection or failure. Every button that would sign a transaction
+ * goes through here, so CONTRACT_ACTIONS_ENABLED switches them all.
  */
 export function useTx() {
   const toast = useToast();
@@ -23,6 +24,8 @@ export function useTx() {
 
   const run = useCallback(
     async (send: (opts: TxOptions) => Promise<TxResult>, success: string): Promise<boolean> => {
+      // Owner decision: until contracts exist, pressing such a button does nothing.
+      if (!CONTRACT_ACTIONS_ENABLED) return false;
       let pendingToast = 0;
       setPending(true);
       try {

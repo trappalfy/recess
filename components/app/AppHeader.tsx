@@ -46,7 +46,7 @@ function DemoBadge({ className = "" }: { className?: string }) {
   return (
     <span
       className={`h-7 items-center gap-2 rounded-full border border-line px-3 text-[13px] text-ink ${className}`}
-      title="Every figure in the app is demonstration data, not a live market."
+      title="Pools, stakes and positions are demonstration data, not a live market."
     >
       <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-blue" />
       Demo data
