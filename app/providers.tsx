@@ -12,7 +12,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider theme={lightTheme({ accentColor: "#0A68F5", borderRadius: "large" })}>
+        {/* The site is English; without a locale the modal follows the browser language. */}
+        <RainbowKitProvider locale="en-US" theme={lightTheme({ accentColor: "#0A68F5", borderRadius: "large" })}>
           {children}
         </RainbowKitProvider>
       </QueryClientProvider>

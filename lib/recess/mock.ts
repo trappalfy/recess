@@ -140,7 +140,8 @@ export class MockClient implements RecessClient {
     return epochAt(this.state.epochOpen + 60_000);
   }
 
-  private stage(): MarketStatus {
+  /** The stage every market is in: forced by the demo controls, or from the schedule. */
+  stage(): MarketStatus {
     return this.state.forced ?? (this.now() < this.weekend().lockTime ? "Open" : "Locked");
   }
 

@@ -1,8 +1,10 @@
 import { connectorsForWallets } from "@rainbow-me/rainbowkit";
 import { injectedWallet, walletConnectWallet } from "@rainbow-me/rainbowkit/wallets";
+import { custom } from "viem";
 import { createConfig, http } from "wagmi";
 import { robinhoodChain } from "./chain";
-import { ENV } from "@/lib/recess/config";
+import { demoWallet } from "./demo-wallet";
+import { ENV, isMock } from "@/lib/recess/config";
 
 /**
  * Built by hand rather than through getDefaultConfig, which bundles the Coinbase
@@ -14,14 +16,30 @@ const wallets = ENV.walletConnectId
   ? [injectedWallet, walletConnectWallet]
   : [injectedWallet];
 
-const connectors = connectorsForWallets([{ groupName: "Wallets", wallets }], {
+/** In mock mode the demo wallet comes first, in a group of its own. */
+const groups = [
+  ...(isMock() ? [{ groupName: "Demo", wallets: [demoWallet] }] : []),
+  { groupName: "Wallets", wallets },
+];
+
+const connectors = connectorsForWallets(groups, {
   appName: "Recess",
   projectId: ENV.walletConnectId || "recess-local",
+});
+
+/**
+ * With no RPC in env (mock mode, or before env is filled in) chain reads fail at
+ * once, instead of calling out to the chain definition's localhost placeholder.
+ */
+const noRpc = custom({
+  request: async () => {
+    throw new Error("No RPC URL is configured.");
+  },
 });
 
 export const wagmiConfig = createConfig({
   chains: [robinhoodChain],
   connectors,
-  transports: { [robinhoodChain.id]: http(ENV.rpcUrl || undefined) },
+  transports: { [robinhoodChain.id]: ENV.rpcUrl ? http(ENV.rpcUrl) : noRpc },
   ssr: true,
 });
