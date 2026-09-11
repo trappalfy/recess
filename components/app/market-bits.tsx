@@ -3,9 +3,13 @@ import { estimateMultiplier } from "@/lib/recess/math";
 import { formatPercent } from "@/lib/recess/format";
 import { RECESS_CONFIG } from "@/lib/recess/config";
 
-/** Update §3.3: before lock every multiplier is marked as an estimate. A void market has none. */
+/**
+ * Update §3.3: before lock every multiplier is marked as an estimate. After
+ * settlement only the winning side has one, and a void market has none.
+ */
 export function multiplierText(market: Market, side: Side): string {
   if (market.status === "Void") return "—";
+  if (market.status === "Settled" && market.winner !== side) return "—";
   const x = estimateMultiplier(market.poolAbove, market.poolBelow, side, RECESS_CONFIG.feeBps);
   if (x === null) return "—";
   return market.status === "Open" ? `est. ${x.toFixed(2)}x` : `${x.toFixed(2)}x`;
@@ -45,8 +49,8 @@ export function SideDot({ side }: { side: Side }) {
   );
 }
 
-/** Nothing while open; afterwards the stage, or the winning side once settled. */
-export function StatusChip({ market }: { market: Market }) {
+/** Nothing while open; afterwards the stage, or the winning side once settled. Markets and positions both carry these two fields. */
+export function StatusChip({ market }: { market: Pick<Market, "status" | "winner"> }) {
   if (market.status === "Open") return null;
   const dot =
     market.status === "Settled" ? (market.winner === "Above" ? "bg-above" : "bg-below") : "bg-body";

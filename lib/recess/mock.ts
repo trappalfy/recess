@@ -148,7 +148,10 @@ export class MockClient implements RecessClient {
   private seedList(): Seed[] {
     const e = this.weekend();
     if (this.seeds?.epochId === e.id) return this.seeds.list;
-    const elapsed = Math.max(HOUR, Math.min(this.now(), e.lockTime) - e.openTime);
+    // Recent stakes sit before now, spread over the time the board has been open;
+    // a board opened early by the demo controls gets the last few hours.
+    const end = Math.min(this.now(), e.lockTime);
+    const span = Math.min(30 * HOUR, Math.max(4 * HOUR, end - e.openTime));
     const list = RECESS_CONFIG.tickers.map((ticker): Seed => {
       const rnd = seeded(`${e.id}:${ticker}`);
       const id = `${e.id}:${ticker}`;
@@ -163,10 +166,10 @@ export class MockClient implements RecessClient {
         activity: Array.from({ length: 6 }, (_, i) => ({
           id: `${id}:seed${i}`,
           marketId: id,
-          user: `0x${hex(40, rnd)}` as `0x${string}`,
           side: (rnd() < 0.5 ? "Above" : "Below") as Side,
           amount: usdg(Math.round(50 + rnd() * 900)),
-          at: e.openTime + Math.floor(rnd() * elapsed),
+          at: end - Math.floor(rnd() * span),
+          user: `0x${hex(40, rnd)}` as `0x${string}`,
         })),
       };
     });
