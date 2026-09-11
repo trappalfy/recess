@@ -1,4 +1,6 @@
 import { AssetBox } from "@/components/ui/AssetBox";
+import { Asset } from "@/components/ui/Asset";
+import { AVAILABLE } from "@/lib/asset-manifest";
 import { Badge } from "@/components/ui/Badge";
 import { BlurWords } from "@/components/ui/BlurWords";
 import { Reveal } from "@/components/ui/Reveal";
@@ -12,11 +14,42 @@ import { u } from "@/lib/u";
  * no manual line breaks: the reference leaves single words hanging, appendix B
  * says not to copy that.
  */
+/* Trial, same as the hero and footer: the Solution screen as one flat image.
+   It is the reference frame with the section top at y 0, so it starts at the
+   top of the blue section; it runs 29u past this block, and the block clips
+   it there, which also drops the white corners at its bottom. While the file
+   is present it replaces the toggle, bell, cursor and tray coin. */
+const PLATE = "solution/solution.webp";
+const PLATE_H = (1905 * 876) / 1796;
+
 export function Solution() {
+  const plate = AVAILABLE.has(PLATE);
   return (
     <>
       <SolutionMobile />
-      <div className="solution-artboard relative hidden lg:block">
+      <div
+        className={`solution-artboard relative hidden lg:block ${plate ? "overflow-hidden" : ""}`}
+      >
+      {plate && (
+        <div
+          className="pointer-events-none absolute left-0 top-0"
+          style={{
+            width: u(1905),
+            height: u(PLATE_H),
+            /* The frame has white rounded corners at its bottom from 891u; fade the
+               edge out just above them, below the tray coin (which ends at 872u). */
+            WebkitMaskImage: "linear-gradient(to bottom, #000 94.17%, transparent 95.89%)",
+            maskImage: "linear-gradient(to bottom, #000 94.17%, transparent 95.89%)",
+          }}
+          data-asset={PLATE}
+          aria-hidden="true"
+        >
+          <Asset src={PLATE} intrinsic={{ w: 1796, h: 876 }} />
+          <div className="grain blue-grain" />
+        </div>
+      )}
+
+      {!plate && (<>
       <AssetBox
         src="solution/toggle.webp"
         x={830} y={40} w={280} h={155} z={2}
@@ -41,6 +74,7 @@ export function Solution() {
         intrinsic={{ w: 700, h: 500 }}
         float={{ y: 6, period: 5.2 }}
       />
+      </>)}
 
       <Reveal className="absolute left-1/2 -translate-x-1/2" style={{ top: u(262) }}>
         <Badge variant="glass" text={COPY.solution.badge} />
